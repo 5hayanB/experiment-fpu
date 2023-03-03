@@ -326,6 +326,7 @@ project/plugins/project/
 .scala_dependencies
 .worksheet
 .bloop/
+.metals/
 ### Java template
 *.class
 

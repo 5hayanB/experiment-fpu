@@ -5,7 +5,7 @@ import chisel3._, chiseltest._, org.scalatest.flatspec.AnyFlatSpec
 
 class RegisterFileTest extends AnyFlatSpec with ChiselScalatestTester {
   behavior of "RegisterFile"
-  it should "run successfully" in {
+  it should "Register File" in {
     test(new RegisterFile) { regFile =>
       for (i <- 0 until 3) {
         regFile.io.rAddr(i).poke(i.U)

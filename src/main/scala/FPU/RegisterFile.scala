@@ -5,7 +5,7 @@ import chisel3._, chisel3.util._
 
 class RegisterFileIO extends Bundle with Parameters {
   // Inputs
-  val rAddr : Vec[UInt] = Input(Vec(4, UInt(regAddrLen.W)))
+  val rAddr : Vec[UInt] = Input(Vec(5, UInt(regAddrLen.W)))
   val rdData: Valid[SInt] = Flipped(Valid(SInt(flen.W)))
 
   // Outputs

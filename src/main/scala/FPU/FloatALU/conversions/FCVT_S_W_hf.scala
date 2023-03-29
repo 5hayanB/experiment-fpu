@@ -1,7 +1,6 @@
-package FPU.conversions
+package FPU.FloatALU.conversions
 
-import chisel3._
-import hardfloat._
+import chisel3._, hardfloat._
 import FPU.Parameters
 
 

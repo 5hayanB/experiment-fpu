@@ -1,4 +1,4 @@
-package FPU
+package FPU.FloatALU
 import chisel3._, chiseltest._, org.scalatest.freespec.AnyFreeSpec
 
 
@@ -9,7 +9,7 @@ class ALU_Test extends AnyFreeSpec with ChiselScalatestTester {
         val testcases: Seq[(Int, String)] = Seq(
           13 -> "b01000001010100000000000000000000",
           -1499591369 -> "b11001110101100101100001111100110",
-          //648258640 -> "b01001110000110101000111010010001"//,
+          648258640 -> "b01001110000110101000111010010001",
           //154112043 -> "b01001101000100101111100100000011",
           //31936245 -> "b01001011111100111010011101111010",
           //-1986441000 -> "b11001110111011001100110101011110",

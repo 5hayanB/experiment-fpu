@@ -1,4 +1,4 @@
-package FPU.conversions
+package FPU.FloatALU.conversions
 
 import chisel3._, chiseltest._, org.scalatest.freespec.AnyFreeSpec
 

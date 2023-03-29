@@ -1,11 +1,10 @@
-package FPU
+package FPU.FloatRegisterFile
 
-import chisel3._, chiseltest._, org.scalatest.flatspec.AnyFlatSpec
+import chisel3._, chiseltest._, org.scalatest.freespec.AnyFreeSpec
 
 
-class RegisterFileTest extends AnyFlatSpec with ChiselScalatestTester {
-  behavior of "RegisterFile"
-  it should "Register File" in {
+class RegisterFileTest extends AnyFreeSpec with ChiselScalatestTester {
+  "Register File" in {
     test(new RegisterFile) { regFile =>
       for (i <- 0 until 3) {
         regFile.io.rAddr(i).poke(i.U)

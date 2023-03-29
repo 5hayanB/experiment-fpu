@@ -1,6 +1,7 @@
-package FPU
+package FPU.FloatRegisterFile
 
 import chisel3._, chisel3.util._
+import FPU._
 
 
 class RegisterFileIO extends Bundle with Parameters {

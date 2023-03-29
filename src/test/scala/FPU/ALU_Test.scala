@@ -7,8 +7,9 @@ class ALU_Test extends AnyFreeSpec with ChiselScalatestTester {
     test(new ALU) {
       alu =>
         val testcases: Seq[(Int, String)] = Seq(
-          //-1499591369 -> "b11001110101100101100001111100110",
-          648258640 -> "b01001110000110101000111010010001"//,
+          13 -> "b01000001010100000000000000000000",
+          -1499591369 -> "b11001110101100101100001111100110",
+          //648258640 -> "b01001110000110101000111010010001"//,
           //154112043 -> "b01001101000100101111100100000011",
           //31936245 -> "b01001011111100111010011101111010",
           //-1986441000 -> "b11001110111011001100110101011110",
@@ -113,9 +114,9 @@ class ALU_Test extends AnyFreeSpec with ChiselScalatestTester {
           alu.io.input(0).poke(i._1.S)
           alu.io.input(1).poke(0.S)
           alu.io.input(2).poke(0.S)
-          alu.io.aluCtl.poke(1.U)
-          alu.io.roundingMode.poke(6.U)
-          alu.io.detectTininess.poke(0.U)
+          alu.io.aluCtl.poke(2.U)
+          //alu.io.roundingMode.poke(6.U)
+          //alu.io.detectTininess.poke(0.U)
 
           alu.clock.step(1)
 

@@ -33,11 +33,11 @@ class FCVT_S_W extends Module with Parameters {
   unbias := 30.U - PriorityEncoder(Reverse(magnitude))
   val rev = dontTouch(Reverse(magnitude))
   val priorityEn = dontTouch(PriorityEncoder(rev))
-  val shiftOp = dontTouch(significandWidth.U - unbias.asUInt)
+  val shiftOp = dontTouch(30.U - unbias)
 
   sign        := io.intIn(flen - 1)
   exponent    := unbias.asSInt + bias.S
-  significand := magnitude << (significandWidth.U - unbias.asUInt)
+  significand := (magnitude << shiftOp)(flen - 2, flen - 2 - significandWidth)
 
   val float: SInt = Cat(sign, exponent, significand).asSInt
 

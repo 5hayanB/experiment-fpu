@@ -46,7 +46,7 @@ class FCVT_S_W extends Module with Parameters with RoundingModes {
   val grs: UInt = dontTouch(Map(
     "G" -> shiftedMag(magnLSB - 1).asUInt,
     "R" -> shiftedMag(magnLSB - 2).asUInt,
-    "S" -> shiftedMag(magnLSB - 3).asUInt
+    "S" -> shiftedMag(magnLSB - 3, 0).orR.asUInt
   ).values.reduce((x, y) => Cat(x, y)))
 
   rSignificand := MuxCase(RNE(significand, grs), Seq(

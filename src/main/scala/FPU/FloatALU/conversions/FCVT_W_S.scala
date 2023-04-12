@@ -1,6 +1,7 @@
-//package FPU
+//package FPU.FloatALU.conversions
 //
 //import chisel3._, chisel3.util._
+//import FPU._
 //
 //
 //class FCVT_W_S_IO extends Bundle with Parameters {
@@ -13,12 +14,16 @@
 //class FCVT_W_S extends Module with Parameters {
 //  val io: FCVT_W_S_IO = IO(new FCVT_W_S_IO)
 //
+//  val unbias: SInt = WireInit(0.S(exponentWidth.W))
+//
 //  val sign       : UInt = io.floatIn(flen - 1)
-//  val exponent   : SInt = io.floatIn(flen - sign.getWidth - 1, significandLen).asSInt - bias.S
-//  val significand: UInt = io.floatIn(significandLen - 1, 0)
+//  val exponent   : SInt = io.floatIn(flen - 2, significandWidth).asSInt
+//  val significand: UInt = io.floatIn(significandWidth - 1, 0)
+//
+//  unbias := exponent - bias.S
 //  val magnitude  : SInt = Mux(
 //    exponent >= 0.S,
-//    (Cat("b1".U, significand) >> (significandLen.S - exponent).asUInt).asSInt,
+//    (Cat("b1".U, significand) >> ().asUInt).asSInt,
 //    0.S
 //  )
 //  val infinity   : Bool = WireInit(0.B)

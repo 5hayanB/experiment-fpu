@@ -9,7 +9,6 @@ class FALU_IO extends Bundle {
   val input         : Vec[UInt] = Input(Vec(3, UInt(32.W)))
   val aluCtl        : UInt      = Input(UInt(4.W))
   val roundingMode  : UInt      = Input(UInt(3.W))
-  val detectTininess: UInt      = Input(UInt(1.W))
 
   // Outputs
   val out: UInt = Output(UInt(32.W))
@@ -41,7 +40,7 @@ class FALU extends Module {
   Seq(
     (fadd.io.subOp, Mux(io.aluCtl === 2.U, 1.B, 0.B)),
     (fadd.io.roundingMode, io.roundingMode),
-    (fadd.io.detectTininess, io.detectTininess)
+    (fadd.io.detectTininess, 1.U)
   ).map(x => x._1 := x._2)
 
   // Operation Selection

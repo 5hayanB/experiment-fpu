@@ -1,11 +1,12 @@
-package FPU.FloatALU.conversions
+package FPU.conversions
+
 import chisel3._, chiseltest._, org.scalatest.freespec.AnyFreeSpec
 
 
 class FCVT_S_WU_Test extends AnyFreeSpec with ChiselScalatestTester {
   "FCVT_S_WU" in {
     test(new FCVT_S_WU) {
-      alu =>
+      fcvt =>
         val testcases: Seq[(Long, String)] = Seq(
           647892279L -> "b01001110000110100111100000110101",
           810111L -> "b01001001010001011100011111110000",
@@ -510,14 +511,12 @@ class FCVT_S_WU_Test extends AnyFreeSpec with ChiselScalatestTester {
         )
 
         for (i <- testcases) {
-          alu.io.intIn.poke(i._1.U)
+          fcvt.io.in.poke(i._1.U)
 
-          alu.clock.step(1)
+          fcvt.clock.step(1)
 
-          alu.io.floatOut.expect(i._2.U)
+          fcvt.io.out.expect(i._2.U)
         }
-
-        alu.clock.step(1)
     }
   }
 }

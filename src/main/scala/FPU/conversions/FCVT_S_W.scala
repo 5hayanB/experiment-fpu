@@ -1,13 +1,13 @@
-package FPU.FloatALU.conversions
+package FPU.conversions
 
 import chisel3._, chisel3.util._
 import FPU._
 
 
 class FCVT_S_W_IO extends Bundle with Parameters {
-  val intIn: SInt = Input(SInt(flen.W))
+  val in: SInt = Input(SInt(flen.W))
 
-  val floatOut: SInt = Output(SInt(flen.W))
+  val out: UInt = Output(UInt(flen.W))
 }
 
 
@@ -15,13 +15,13 @@ class FCVT_S_W extends Module with Parameters with RoundingModes {
   val io: FCVT_S_W_IO = IO(new FCVT_S_W_IO)
 
   val abs         : SInt = Wire(SInt(flen.W))
-  val exponent    : SInt = Wire(SInt(exponentWidth.W))
-  val significand : UInt = Wire(UInt(significandWidth.W))
-  val rSignificand: UInt = Wire(UInt(significandWidth.W))
+  val exponent    : SInt = Wire(SInt(expWidth.W))
+  val significand : UInt = Wire(UInt(sigWidth.W))
+  val rSignificand: UInt = Wire(UInt(sigWidth.W))
   val sign        : UInt = Wire(UInt(signWidth.W))
-  val unbias      : UInt = Wire(UInt(exponentWidth.W))
+  val unbias      : UInt = Wire(UInt(expWidth.W))
 
-  abs := Mux(io.intIn < 0.S, -io.intIn, io.intIn)
+  abs := Mux(io.in < 0.S, -io.in, io.in)
 
   val magnitude : UInt = abs(flen - 2, 0)
   val shiftedMag: UInt = dontTouch(Wire(UInt(magnitude.getWidth.W)))
@@ -36,7 +36,7 @@ class FCVT_S_W extends Module with Parameters with RoundingModes {
   //val shiftOp = 30.U - unbias
   unbias := (magnitude.getWidth - 1).U - priorityEn
 
-  val magnLSB: Int = flen - significandWidth - 1
+  val magnLSB: Int = flen - sigWidth - 1
   shiftedMag := magnitude << (priorityEn + 1.U)
   significand := shiftedMag(flen - 2, magnLSB)
   val grs: UInt = dontTouch(Map(
@@ -48,12 +48,10 @@ class FCVT_S_W extends Module with Parameters with RoundingModes {
   rSignificand := MuxCase(RNE(significand, grs), Seq(
   ))
 
-  sign        := io.intIn(flen - 1)
+  sign        := io.in(flen - 1)
   exponent    := unbias.asSInt + bias.S
 
-  val float: SInt = Cat(sign, exponent, rSignificand).asSInt
-
-  io.floatOut := float
+  io.out := Cat(sign, exponent, rSignificand)
 
 
   // Debug Section

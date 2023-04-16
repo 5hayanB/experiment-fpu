@@ -1,7 +1,7 @@
-package FPU.conversions
+package fpu.conversions
 
 import chisel3._, chisel3.util._
-import FPU._
+import fpu._
 
 
 class FCVT_S_WU_IO extends Bundle with Parameters {

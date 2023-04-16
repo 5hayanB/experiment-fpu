@@ -1,4 +1,4 @@
-package FPU.FloatALU
+package fpu.FloatALU
 
 import chisel3._, chisel3.util._
 import hardfloat._

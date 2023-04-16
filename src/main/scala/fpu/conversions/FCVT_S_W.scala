@@ -1,7 +1,7 @@
-package FPU.conversions
+package fpu.conversions
 
 import chisel3._, chisel3.util._
-import FPU._
+import fpu._
 
 
 class FCVT_S_W_IO extends Bundle with Parameters {
@@ -24,16 +24,15 @@ class FCVT_S_W extends Module with Parameters with RoundingModes {
   abs := Mux(io.in < 0.S, -io.in, io.in)
 
   val magnitude : UInt = abs(flen - 2, 0)
-  val shiftedMag: UInt = dontTouch(Wire(UInt(magnitude.getWidth.W)))
+  val shiftedMag: UInt = Wire(UInt(magnitude.getWidth.W))
 
-  // The prioirity encoder is used to find the position of the leading one.
+  // The priority encoder is used to find the position of the leading one.
   // In CHISEL, the priority encoder has the highest priority starting from LSB.
   // Therefore the magnitude is reversed to find the leading one and then
   // the resulting position is subtracted from 30 (the no. of bits in magnitude)
   // to get the un-reversed (aka the original) position of the leading one (aka unbiased exponent)
   val rev = Reverse(magnitude)
   val priorityEn = PriorityEncoder(rev)
-  //val shiftOp = 30.U - unbias
   unbias := (magnitude.getWidth - 1).U - priorityEn
 
   val magnLSB: Int = flen - sigWidth - 1

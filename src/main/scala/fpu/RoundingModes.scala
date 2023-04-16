@@ -1,4 +1,4 @@
-package FPU
+package fpu
 
 import chisel3._, chisel3.util._
 

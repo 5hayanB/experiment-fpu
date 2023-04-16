@@ -1,4 +1,4 @@
-package FPU
+package fpu
 
 trait Parameters {
   val flen        : Int = 32

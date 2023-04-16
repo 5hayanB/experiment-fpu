@@ -1,9 +1,9 @@
-package FPU.conversions
+package fpu.conversions
 
 import chisel3._, chiseltest._, org.scalatest.freespec.AnyFreeSpec
 
 
-class FCVT_W_S_Test_Test extends AnyFreeSpec with ChiselScalatestTester {
+class FCVT_W_S_Test extends AnyFreeSpec with ChiselScalatestTester {
   "FCVT_W_S" in {
     test(new FCVT_W_S) {
       fcvt =>

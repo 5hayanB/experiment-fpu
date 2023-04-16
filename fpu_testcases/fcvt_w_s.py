@@ -14,18 +14,39 @@ def bin_to_float(b: str) -> float:
 
 def main() -> None:
     for i in range(iterations):
-        f32: str = ''.join([f'{random.randint(0, 1):01b}',
-                            f'{random.randint(1, 254):08b}',
-                            f'{random.randint(0, (2 ** 23) - 1):023b}'])
+        if (i % 9) == 0:
+            f32: str = ''.join([f'{random.randint(0, 1):01b}',
+                                f'{random.randint(158, 255):08b}',
+                                f'{random.randint(0, (2 ** 23) - 1):023b}'])
 
-        f_to_int.append('"b{0}" -> {1}'.format(
-            f32,
-            np.int32(bin_to_float(f32)) if -(2 ** 31) <= int(bin_to_float(f32)) <= ((2 ** 31) - 1)
-            else -(2 ** 31) if int(bin_to_float(f32)) < -(2 ** 31)
-            else (2 ** 31) - 1
-        ))
+            f_to_int.append('"b{0}" -> {1},  // {2}'.format(
+                f32,
+                -(2 ** 31) if bin_to_float(f32) <= -(2 ** 31)
+                else (2 ** 31) - 1,
+                bin_to_float(f32)
+            ))
+        elif (i % 9) == 2:
+            f32: str = ''.join([f'{random.randint(0, 1):01b}',
+                                f'{random.randint(0, 127):08b}',
+                                f'{random.randint(0, (2 ** 23) - 1):023b}'])
 
-    testbench1: str = """package FPU.conversions
+            f_to_int.append('"b{0}" -> {1},  // {2}'.format(
+                f32,
+                np.int32(bin_to_float(f32)),
+                bin_to_float(f32)
+            ))
+        else:
+            f32: str = ''.join([f'{random.randint(0, 1):01b}',
+                                f'{random.randint(128, 157):08b}',
+                                f'{random.randint(0, (2 ** 23) - 1):023b}'])
+
+            f_to_int.append('"b{0}" -> {1},  // {2}'.format(
+                f32,
+                np.int32(bin_to_float(f32)),
+                bin_to_float(f32)
+            ))
+
+    testbench1: str = """package fpu.conversions
 
 import chisel3._, chiseltest._, org.scalatest.freespec.AnyFreeSpec
 
@@ -37,7 +58,7 @@ class FCVT_W_S_Test extends AnyFreeSpec with ChiselScalatestTester {
         val testcases: Seq[(String, Int)] = Seq(
           """
 
-    testbench2: str = f',\n{" " * 10}'.join(f_to_int)
+    testbench2: str = f'\n{" " * 10}'.join(f_to_int)
 
     testbench3: str = """
         )

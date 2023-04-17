@@ -1,4 +1,4 @@
-package fpu
+package nucleusrv.components.fpu
 
 import chisel3._, chisel3.util._
 

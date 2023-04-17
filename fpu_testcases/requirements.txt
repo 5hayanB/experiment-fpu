@@ -1,2 +1,4 @@
 bitstring==4.0.1
 numpy==1.24.2
+
+icecream==2.1.3

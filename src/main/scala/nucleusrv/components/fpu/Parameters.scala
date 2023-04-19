@@ -8,4 +8,5 @@ trait Parameters {
   val sigWidth      : Int = 23
   val signWidth     : Int = 1
   val roundModeWidth: Int = 3
+  val f5Width       : Int = 7
 }

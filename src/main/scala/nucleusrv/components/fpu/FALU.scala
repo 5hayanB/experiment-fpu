@@ -67,7 +67,9 @@ class FALU extends Module {
     ),
 
     fcmp.io.signaling -> Seq(
-      16.U -> 1.B
+      16, 17
+    ).map(
+      f => f.U -> 1.B
     )
   ).map(
     f => f._1 -> MuxLookup(io.aluCtl, 0.U, f._2)

@@ -1,4 +1,5 @@
-import random, os, struct, numpy as np
+import random, os, numpy as np
+from utils import bin_to_float
 
 
 cwd = os.path.dirname(__file__)
@@ -7,9 +8,6 @@ random.seed(7)
 f_to_int: list[str] = []
 
 
-def bin_to_float(b: str) -> float:
-    bf = int(b, 2).to_bytes(4, 'big')
-    return struct.unpack('>f', bf)[0]
 
 
 def main() -> None:

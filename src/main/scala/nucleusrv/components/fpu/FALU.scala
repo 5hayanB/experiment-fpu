@@ -11,7 +11,8 @@ class FALU_IO extends Bundle {
   val roundMode: UInt      = Input(UInt(3.W))
 
   // Outputs
-  val out: UInt = Output(UInt(32.W))
+  val out       : UInt = Output(UInt(32.W))
+  val exceptions: UInt = Output(UInt(5.W))
 }
 
 
@@ -24,27 +25,71 @@ class FALU extends Module {
 
   // Modules
   val fadd = Module(new AddRecFN(expWidth, sigWidth))
+  val fdiv = Module(new DivSqrtRecFN_small(expWidth, sigWidth, 0))
+  val fcmp = Module(new CompareRecFN(expWidth, sigWidth))
 
   // Debug Counter
   val counter: UInt = dontTouch(RegInit(0.U(32.W)))
   counter := counter + 1.U
 
   // Connections
-  Seq(
-    (fadd.io.subOp, 0.B),
-    (fadd.io.a, recFNFromFN(expWidth, sigWidth, io.input(0))),
-    (fadd.io.b, recFNFromFN(expWidth, sigWidth, io.input(1))),
-    (fadd.io.roundingMode, io.roundMode),
-    (fadd.io.detectTininess, 1.B)
+  // - Inputs
+  (Seq(
+    fadd.io.a,
+    fdiv.io.a,
+    fcmp.io.a
+  ).map (
+    f => f -> 0
+  ) ++ Seq(
+    fadd.io.b,
+    fdiv.io.b,
+    fcmp.io.b
   ).map(
-    f =>
-      f._1 := f._2
+    f => f -> 1
+  )).map(
+    f => f._1 := recFNFromFN(expWidth, sigWidth, io.input(f._2))
+  )
+
+  (Seq(  // - Module Specific
+    fadd.io.subOp -> 0.B,
+
+    fdiv.io.inValid -> fdiv.io.inReady,
+    fdiv.io.sqrtOp -> 0.U,
+
+    fcmp.io.signaling -> 0.B
+  ) ++ Seq(  // - roundingMode
+    fadd.io.roundingMode,
+    fdiv.io.roundingMode
+  ).map(
+    f => f -> io.roundMode
+  ) ++ Seq(  // - detectTininess
+    fadd.io.detectTininess,
+    fdiv.io.detectTininess
+  ).map(
+    f => f -> consts.tininess_afterRounding
+  )).map(
+    f => f._1 := f._2
   )
 
   // Operation Selection
-  io.out := MuxLookup(io.aluCtl, 0.U, Seq(
-    12.U -> fNFromRecFN(expWidth, sigWidth, fadd.io.out)
-  ))
+  Seq(
+    io.out -> Seq(
+      fadd.io.out,
+      fdiv.io.out
+    ).map(
+      f => fNFromRecFN(expWidth, sigWidth, f)
+    ),
+    io.exceptions -> Seq(
+      fadd.io.exceptionFlags,
+      fdiv.io.exceptionFlags,
+      fcmp.io.exceptionFlags
+    )
+  ).map(
+    f => f._1 := MuxLookup(io.aluCtl, 0.U, Seq(
+      12.U -> f._2(0),
+      13.U -> f._2(1)
+    ))
+  )
 
 
 

@@ -24,9 +24,9 @@ class FALU extends Module {
   val sigWidth: Int = 24
 
   // Modules
-  val fadd = Module(new AddRecFN(expWidth, sigWidth))
-  val fdiv = Module(new DivSqrtRecFN_small(expWidth, sigWidth, 0))
-  val fcmp = Module(new CompareRecFN(expWidth, sigWidth))
+  val fadd  = Module(new AddRecFN(expWidth, sigWidth))
+  val fdiv  = Module(new DivSqrtRecFN_small(expWidth, sigWidth, 0))
+  val fmadd = Module(new MulAddRecFN(expWidth, sigWidth))
 
   // Debug Counter
   val counter: UInt = dontTouch(RegInit(0.U(32.W)))
@@ -37,15 +37,17 @@ class FALU extends Module {
   (Seq(
     fadd.io.a,
     fdiv.io.a,
-    fcmp.io.a
+    fmadd.io.a
   ).map (
     f => f -> 0
   ) ++ Seq(
     fadd.io.b,
     fdiv.io.b,
-    fcmp.io.b
+    fmadd.io.b
   ).map(
     f => f -> 1
+  ) ++ Seq(
+    fmadd.io.c -> 2
   )).map(
     f => f._1 := recFNFromFN(expWidth, sigWidth, io.input(f._2))
   )
@@ -56,15 +58,20 @@ class FALU extends Module {
     fdiv.io.inValid -> fdiv.io.inReady,
     fdiv.io.sqrtOp -> 0.U,
 
-    fcmp.io.signaling -> 0.B
+    fmadd.io.op -> MuxLookup(io.aluCtl, 0.U, Seq(
+      14.U -> 0.U,
+      15.U -> 3.U
+    ))
   ) ++ Seq(  // - roundingMode
     fadd.io.roundingMode,
-    fdiv.io.roundingMode
+    fdiv.io.roundingMode,
+    fmadd.io.roundingMode
   ).map(
     f => f -> io.roundMode
   ) ++ Seq(  // - detectTininess
     fadd.io.detectTininess,
-    fdiv.io.detectTininess
+    fdiv.io.detectTininess,
+    fmadd.io.detectTininess
   ).map(
     f => f -> consts.tininess_afterRounding
   )).map(
@@ -75,19 +82,27 @@ class FALU extends Module {
   Seq(
     io.out -> Seq(
       fadd.io.out,
-      fdiv.io.out
+      fdiv.io.out,
+      fmadd.io.out
     ).map(
       f => fNFromRecFN(expWidth, sigWidth, f)
     ),
     io.exceptions -> Seq(
       fadd.io.exceptionFlags,
       fdiv.io.exceptionFlags,
-      fcmp.io.exceptionFlags
+      fmadd.io.exceptionFlags,
     )
   ).map(
-    f => f._1 := MuxLookup(io.aluCtl, 0.U, Seq(
-      12.U -> f._2(0),
-      13.U -> f._2(1)
+    f => f._1 := MuxCase(0.U, Seq(
+      Seq(12.U)       -> f._2(0),
+      Seq(13.U)       -> f._2(1),
+      Seq(14.U, 15.U) -> f._2(2)
+    ).map(
+      x => x._1.map(
+        y => io.aluCtl === y
+      ).reduce(
+        (a, b) => a || b
+      ) -> x._2
     ))
   )
 

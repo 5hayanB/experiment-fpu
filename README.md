@@ -1,1 +1,0 @@
-This repository is for experimenting the implementation of a Floating Point Unit in single-precision IEEE 754 floating point format.

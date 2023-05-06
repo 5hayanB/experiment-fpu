@@ -67,7 +67,7 @@ class FALU extends Module {
     ),
 
     fcmp.io.signaling -> Seq(
-      16, 17
+      16, 17, 18
     ).map(
       f => f.U -> 1.B
     )
@@ -99,12 +99,14 @@ class FALU extends Module {
       f => fNFromRecFN(expWidth, sigWidth, f)
     ) ++ Seq(
       fcmp.io.lt,
-      (fcmp.io.lt || fcmp.io.eq)
+      (fcmp.io.lt || fcmp.io.eq),
+      Mux(fcmp.io.lt, io.input(0), io.input(1))
     )),
     io.exceptions -> Seq(
       fadd.io.exceptionFlags,
       fdiv.io.exceptionFlags,
       fmadd.io.exceptionFlags,
+      fcmp.io.exceptionFlags,
       fcmp.io.exceptionFlags,
       fcmp.io.exceptionFlags
     )
@@ -114,7 +116,8 @@ class FALU extends Module {
       Seq(13.U)       -> f._2(1),
       Seq(14.U, 15.U) -> f._2(2),
       Seq(16.U)       -> f._2(3),
-      Seq(17.U)       -> f._2(4)
+      Seq(17.U)       -> f._2(4),
+      Seq(18.U)       -> f._2(5)
     ).map(
       x => x._1.map(
         y => io.aluCtl === y

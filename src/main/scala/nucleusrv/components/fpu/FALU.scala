@@ -62,12 +62,12 @@ class FALU extends Module {
     fdiv.io.sqrtOp -> 0.U
   ) ++ Seq(
     fmadd.io.op -> Seq(
-      14.U -> 0.U,
-      15.U -> 3.U
+      12.U -> 0.U,
+      16.U -> 3.U
     ),
 
     fcmp.io.signaling -> Seq(
-      16, 17, 18
+      13, 14, 15
     ).map(
       f => f.U -> 1.B
     )
@@ -90,42 +90,36 @@ class FALU extends Module {
   )
 
   // Operation Selection
-  Seq(
-    io.out -> (Seq(
-      fadd.io.out,
-      fdiv.io.out,
-      fmadd.io.out
-    ).map(
-      f => fNFromRecFN(expWidth, sigWidth, f)
-    ) ++ Seq(
-      fcmp.io.lt,
-      (fcmp.io.lt || fcmp.io.eq),
-      Mux(fcmp.io.lt, io.input(0), io.input(1))
-    )),
-    io.exceptions -> Seq(
-      fadd.io.exceptionFlags,
-      fdiv.io.exceptionFlags,
-      fmadd.io.exceptionFlags,
-      fcmp.io.exceptionFlags,
-      fcmp.io.exceptionFlags,
-      fcmp.io.exceptionFlags
-    )
+  io.out := MuxCase(0.U, (Seq(
+    Seq(10) -> fadd.io.out,
+    Seq(11) -> fdiv.io.out,
+    Seq(12, 16) -> fmadd.io.out
   ).map(
-    f => f._1 := MuxCase(0.U, Seq(
-      Seq(12.U)       -> f._2(0),
-      Seq(13.U)       -> f._2(1),
-      Seq(14.U, 15.U) -> f._2(2),
-      Seq(16.U)       -> f._2(3),
-      Seq(17.U)       -> f._2(4),
-      Seq(18.U)       -> f._2(5)
-    ).map(
-      x => x._1.map(
-        y => io.aluCtl === y
-      ).reduce(
-        (a, b) => a || b
-      ) -> x._2
-    ))
-  )
+    f => f._1 -> fNFromRecFN(expWidth, sigWidth, f._2)
+  ) ++ Seq(
+    Seq(13) -> fcmp.io.lt,
+    Seq(14) -> (fcmp.io.lt || fcmp.io.eq),
+    Seq(15) -> Mux(fcmp.io.lt, io.input(0), io.input(1))
+  )).map(
+    x => x._1.map(
+      y => io.aluCtl === y.U
+    ).reduce(
+      (y, z) => y || z
+    ) -> x._2
+  ))
+
+  io.exceptions := MuxCase(0.U, Seq(
+    Seq(10) -> fadd.io.exceptionFlags,
+    Seq(11) -> fdiv.io.exceptionFlags,
+    Seq(12, 16) -> fmadd.io.out,
+    Seq(13, 14, 15) -> fcmp.io.exceptionFlags
+  ).map(
+    x => x._1.map(
+      y => io.aluCtl === y.U
+    ).reduce(
+      (y, z) => y || z
+    ) -> x._2
+  ))
 
 
 

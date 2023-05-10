@@ -514,7 +514,7 @@ class FALU_Test extends AnyFreeSpec with ChiselScalatestTester {
           falu.io.input(0).poke(i._1._1.U)
           falu.io.input(1).poke(i._1._2.U)
           falu.io.input(2).poke(0.U)
-          falu.io.aluCtl.poke(18.U)
+          falu.io.aluCtl.poke(15.U)
           falu.io.roundMode.poke(0.U)
 
           falu.clock.step(1)

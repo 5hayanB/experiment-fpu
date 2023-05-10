@@ -62,12 +62,12 @@ class FALU extends Module {
     fdiv.io.sqrtOp -> 0.U
   ) ++ Seq(
     fmadd.io.op -> Seq(
-      12.U -> 0.U,
-      16.U -> 3.U
+      16.U -> 0.U,
+      17.U -> 3.U
     ),
 
     fcmp.io.signaling -> Seq(
-      13, 14, 15
+      18, 19, 20
     ).map(
       f => f.U -> 1.B
     )
@@ -91,15 +91,15 @@ class FALU extends Module {
 
   // Operation Selection
   io.out := MuxCase(0.U, (Seq(
-    Seq(10) -> fadd.io.out,
-    Seq(11) -> fdiv.io.out,
-    Seq(12, 16) -> fmadd.io.out
+    Seq(14) -> fadd.io.out,
+    Seq(15) -> fdiv.io.out,
+    Seq(16, 17) -> fmadd.io.out
   ).map(
     f => f._1 -> fNFromRecFN(expWidth, sigWidth, f._2)
   ) ++ Seq(
-    Seq(13) -> fcmp.io.lt,
-    Seq(14) -> (fcmp.io.lt || fcmp.io.eq),
-    Seq(15) -> Mux(fcmp.io.lt, io.input(0), io.input(1))
+    Seq(18) -> fcmp.io.lt,
+    Seq(19) -> (fcmp.io.lt || fcmp.io.eq),
+    Seq(20) -> Mux(fcmp.io.lt, io.input(0), io.input(1))
   )).map(
     x => x._1.map(
       y => io.aluCtl === y.U
@@ -109,10 +109,10 @@ class FALU extends Module {
   ))
 
   io.exceptions := MuxCase(0.U, Seq(
-    Seq(10) -> fadd.io.exceptionFlags,
-    Seq(11) -> fdiv.io.exceptionFlags,
-    Seq(12, 16) -> fmadd.io.out,
-    Seq(13, 14, 15) -> fcmp.io.exceptionFlags
+    Seq(14) -> fadd.io.exceptionFlags,
+    Seq(15) -> fdiv.io.exceptionFlags,
+    Seq(16, 17) -> fmadd.io.out,
+    Seq(18, 19, 20) -> fcmp.io.exceptionFlags
   ).map(
     x => x._1.map(
       y => io.aluCtl === y.U

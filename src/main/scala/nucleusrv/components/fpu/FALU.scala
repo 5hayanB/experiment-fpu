@@ -30,6 +30,19 @@ class FALU extends Module {
   val fmadd = Module(new MulAddRecFN(expWidth, sigWidth))
   val fcmp  = Module(new CompareRecFN(expWidth, sigWidth))
 
+  val inType = (
+    for (i <- 0 until 2)
+      yield rawFloatFromRecFN(
+        expWidth,
+        sigWidth,
+        recFNFromFN(
+          expWidth,
+          sigWidth,
+          io.input(i)
+        )
+      )
+  )
+
   // Debug Counter
   val counter: UInt = dontTouch(RegInit(0.U(32.W)))
   counter := counter + 1.U
@@ -65,17 +78,20 @@ class FALU extends Module {
     fdiv.io.sqrtOp -> 0.U
   ) ++ Seq(
     fmadd.io.op -> Seq(
-      14.U  -> 0.U,
-      25.U  -> 1.U,
-      24.U  -> 2.U,
-      15.U  -> 3.U
+      16.U  -> 0.U,  // fmadd.s
+      25.U  -> 1.U,  // fmsub.s
+      26.U  -> 2.U,  // fnmsub.s
+      17.U  -> 3.U   // fnmadd.s
     ),
 
-    fcmp.io.signaling -> Seq(
-      26,7,18, 19, 20
-    ).map(
-      f => f.U -> 1.B
-    )
+    fcmp.io.signaling -> (Seq(
+      18,  // flt.s
+      19   // fle.s
+    ).map(f => f.U -> 1.B) ++ Seq(
+      20,  // fmin.s
+      23,  // fmax.s
+      27   // feq.s
+    ).map(f => f.U -> 0.B))
   ).map(
     f => f._1 -> MuxLookup(io.aluCtl, 0.U, f._2)
   ) ++ Seq(  // - roundingMode
@@ -98,17 +114,35 @@ class FALU extends Module {
 
   // Operation Selection
   io.out := MuxCase(0.U, (Seq(
-    Seq(14,21) -> fadd.io.out,
-    Seq(15) -> fdiv.io.out,
-    Seq(16,17,25,26) -> fmadd.io.out,
-    Seq(22) -> fmul.io.out
+    Seq(14, 21) -> fadd.io.out,           // 14 -> fadd.s, 21 -> fsub.s
+    Seq(15) -> fdiv.io.out,               // fdiv.s
+    Seq(16, 17, 25, 26) -> fmadd.io.out,  // 16 -> fmadd.s, 17 -> fnmadd.s, 25 -> fmsub.s, 26 -> fnmsub.s
+    Seq(22) -> fmul.io.out                // fmul.s
   ).map(
     f => f._1 -> fNFromRecFN(expWidth, sigWidth, f._2)
   ) ++ Seq(
-    Seq(18) -> fcmp.io.lt,
-    Seq(19) -> (fcmp.io.lt || fcmp.io.eq),
-    Seq(20) -> Mux(fcmp.io.lt, io.input(0), io.input(1)),
-    Seq(23) -> Mux(fcmp.io.gt, io.input(0), io.input(1)),
+    Seq(18) -> fcmp.io.lt,                                              // flt.s
+    Seq(19) -> (fcmp.io.lt || fcmp.io.eq),                              // fle.s
+    Seq(20) -> MuxCase(Mux(fcmp.io.lt, io.input(0), io.input(1)), Seq(  // fmin.s
+      inType.map(f => f.isNaN).reduce(
+        (a, b) => a && b
+      ) -> "h7FC00000".U
+    ) ++ Seq(
+      0 -> 1,
+      1 -> 0
+    ).map(
+      f => inType(f._1).isNaN -> io.input(f._2)
+    )),
+    Seq(23) -> MuxCase(Mux(fcmp.io.gt, io.input(0), io.input(1)), Seq(  // fmax.s
+      inType.map(f => f.isNaN).reduce(
+        (a, b) => a && b
+      ) -> "h7FC00000".U
+    ) ++ Seq(
+      0 -> 1,
+      1 -> 0
+    ).map(
+      f => inType(f._1).isNaN -> io.input(f._2)
+    )),
     Seq(27) -> fcmp.io.eq
   )).map(
     x => x._1.map(
@@ -119,11 +153,11 @@ class FALU extends Module {
   ))
 
   io.exceptions := MuxCase(0.U, Seq(
-    Seq(14,21) -> fadd.io.exceptionFlags,
-    Seq(15,24) -> fdiv.io.exceptionFlags,
-    Seq(16,17,25,26) -> fmadd.io.out,
-    Seq(18,19,23,27) -> fcmp.io.exceptionFlags,
-    Seq(22) -> fmul.io.exceptionFlags
+    Seq(14, 21) -> fadd.io.exceptionFlags,              // fadd.s, fsub.s
+    Seq(15, 24) -> fdiv.io.exceptionFlags,              // fdiv.s, fsqrt.s
+    Seq(16, 17, 25, 26) -> fmadd.io.out,                // fmadd.s, fnmadd.s, fmsub.s, fmnsub.s
+    Seq(18, 19, 20, 23, 27) -> fcmp.io.exceptionFlags,  // flt.s, fle.s, fmin.s, fmax.s, feq.s
+    Seq(22) -> fmul.io.exceptionFlags,                  // fmul.s
   ).map(
     x => x._1.map(
       y => io.aluCtl === y.U

@@ -1,13 +1,21 @@
-import numpy as np
+import numpy as np, random
 from icecream import ic
-from utils import bin_to_float, float_to_bin
+from utils import bin_to_float, float_to_bin, float_to_hex
 
 
 def main() -> None:
-    a: float = bin_to_float('11001110110111111001000101011110')
-    b: float = bin_to_float('10010010001011111010011100110010')
+    rs: list[str] = [''.join([f'{random.randint(0, 1):01b}',
+                              f'{random.randint(1, 254):08b}',
+                              f'{random.randint(0, (2 ** 23) - 1):023b}'])
+                     for _ in range(2)]
 
-    ic(a), ic(b), ic(a < b)
+    f32: float = np.float32(bin_to_float(rs[0])) / np.float32(bin_to_float(rs[1]))
+
+    ic(rs)
+    ic(float_to_bin(f32))
+
+    with open('draft.txt', 'w', encoding='UTF-8') as f:
+        f.write(f'{float_to_hex(bin_to_float(rs[0]))} % {float_to_hex(bin_to_float(rs[1]))} = {float_to_hex(f32)}')
 
 
 if __name__ == '__main__':

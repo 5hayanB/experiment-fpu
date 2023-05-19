@@ -58,10 +58,12 @@ class Top extends Module {
 
   val regSel: UInt = RegInit(0.U(32.W))
   val printReg: Bool = RegInit(0.B)
+  val stallValid: Bool = RegInit(falu.io.stallValidOut(0))
 
   regSel := Mux(falu.io.stallValidOut(1), regSel + 1.U, regSel)
   printReg := Mux((0.U <= regSel) && (regSel < 500.U), 1.B, 0.B)
-  falu.io.stallValidIn := 1.B
+  stallValid := falu.io.stallValidOut(0)
+  falu.io.stallValidIn := Mux(stallValid, 1.B, 0.B)
   falu.io.aluCtl := 15.U
   falu.io.roundMode := 0.U
   falu.io.input(2) := 0.U 

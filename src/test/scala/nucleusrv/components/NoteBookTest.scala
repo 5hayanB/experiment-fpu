@@ -6,11 +6,10 @@ import chisel3._,
 
 
 class NoteBookTest extends AnyFreeSpec with ChiselScalatestTester {
-  "FDIV" in {
+  "FSQRT" in {
     test(new NoteBook) {
       nb =>
-        nb.io.a.poke("h090512bd".U)
-        nb.io.b.poke("hc6ca1487".U)
+        nb.io.a.poke("h48c3f930".U)
 
         nb.clock.step(100)
     }

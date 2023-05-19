@@ -9,11 +9,11 @@ class Top extends Module {
 
   val regSel: UInt = RegInit(0.U(32.W))
   val printReg: Bool = RegInit(0.B)
-  val stallValid: Bool = Reg(Bool())
+  val stallValid: Bool = RegInit(falu.io.stallValidOut(0))
 
   regSel := Mux(falu.io.stallValidOut(1), regSel + 1.U, regSel)
   printReg := Mux((0.U <= regSel) && (regSel < 500.U), 1.B, 0.B)
-  stallValid := Mux(stallValid === falu.io.stallValidOut(0), 0.B, falu.io.stallValidOut(0))
+  stallValid := falu.io.stallValidOut(0)
   falu.io.stallValidIn := Mux(stallValid, 1.B, 0.B)
   falu.io.aluCtl := 24.U
   falu.io.roundMode := 0.U
@@ -1526,6 +1526,6 @@ class Top extends Module {
   falu.io.input(1) := 0.U
 
   when (falu.io.stallValidOut(1) && printReg) {
-    printf("[out] sqrt(%x) = %x\n%x", falu.io.input(0), falu.io.out, falu.io.exceptions)
+    printf("[out] sqrt(%x) = %x\n", falu.io.input(0), falu.io.out)
   }
 }

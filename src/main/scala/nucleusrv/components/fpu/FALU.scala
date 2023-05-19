@@ -76,7 +76,7 @@ class FALU extends Module {
   (Seq(  // - Module Specific
     fadd.io.subOp -> Mux(io.aluCtl === 21.U, 1.B, 0.B),
 
-    fdiv.io.inValid -> fdiv.io.inReady,
+    fdiv.io.inValid -> io.stallValidIn,
     fdiv.io.sqrtOp -> Mux(io.aluCtl === 24.U, 1.B, 0.B)
   ) ++ Seq(
     fmadd.io.op -> Seq(

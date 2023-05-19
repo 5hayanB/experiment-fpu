@@ -1,8 +1,8 @@
 import numpy as np, os, random
-from utils import bin_to_float, float_to_bin
+from utils import bin_to_float, float_to_bin, float_to_hex
 
 
-cwd = os.path.dirname(__file__)
+root = os.path.dirname(__file__)
 iterations = 500
 random.seed(4)
 fdiv: list[list[str]] = []
@@ -42,45 +42,70 @@ def main() -> None:
 
     print('All cases verified')
 
-    fdiv_seq: list[str] = [f'("b{e[0]}", "b{e[1]}") -> "b{e[2]}"'
-                           for e in fdiv]
+    fdiv_seq: list[str] = [f'val reg{i}rs1: UInt = RegInit("h{float_to_hex(bin_to_float(fdiv[i][0]))}".U(32.W))\n'
+                           f'  val reg{i}rs2: UInt = RegInit("h{float_to_hex(bin_to_float(fdiv[i][1]))}".U(32.W))'
+                           for i in range(len(fdiv))]
 
 
     testbench1: str = """package nucleusrv.components.fpu
 
-import chisel3._, chiseltest._, org.scalatest.freespec.AnyFreeSpec
+import chisel3._,
+       chisel3.util._
 
 
-class FALU_Test extends AnyFreeSpec with ChiselScalatestTester {
-  "FALU" in {
-    test(new FALU) {
-      falu =>
-        val testcases: Seq[((String, String), String)] = Seq(
-          """
+class Top extends Module {
+  val falu: FALU  = Module(new FALU)
 
-    testbench2: str = f',\n{" " * 10}'.join(fdiv_seq)
+  val regSel: UInt = RegInit(0.U(32.W))
+  val printReg: Bool = RegInit(0.B)
+
+  regSel := Mux(falu.io.stallValidOut(1), regSel + 1.U, regSel)
+  printReg := Mux((0.U <= regSel) && (regSel < 500.U), 1.B, 0.B)
+  falu.io.stallValidIn := 1.B
+  falu.io.aluCtl := 15.U
+  falu.io.roundMode := 0.U
+  falu.io.input(2) := 0.U 
+
+  """
+
+    testbench2: str = f'\n{" " * 2}'.join(fdiv_seq)
 
     testbench3: str = """
-        )
 
-        for (i <- testcases) {
-          falu.io.input(0).poke(i._1._1.U)
-          falu.io.input(1).poke(i._1._2.U)
-          falu.io.input(2).poke(0.U)
-          falu.io.aluCtl.poke(11.U)
-          falu.io.roundMode.poke(0.U)
+  falu.io.input(0) := MuxLookup(regSel, 0.U(32.W), Seq(
+    """
 
-          falu.clock.step(1)
+    testbench4: str = f',\n{" " * 4}'.join([f'{i}.U -> reg{i}rs1'
+                                            for i in range(iterations)])
 
-          falu.io.out.expect(i._2.U)
-        }
-    }
+    testbench5: str = """
+  ))
+
+  falu.io.input(1) := MuxLookup(regSel, 0.U(32.W), Seq(
+    """
+
+    testbench6: str = f',\n{" " * 4}'.join([f'{i}.U -> reg{i}rs2'
+                                            for i in range(iterations)])
+
+    testbench7: str = """
+  ))
+  
+  when (falu.io.stallValidOut(1) && printReg) {
+    printf("[out] %x / %x = %x\\n", falu.io.input(0), falu.io.input(1), falu.io.out)
   }
 }"""
 
     # Writing test file
-    with open('{0}/FALU_Test.scala'.format(cwd), 'w', encoding='UTF-8') as f:
-        f.write(testbench1 + testbench2 + testbench3)
+    with open('{0}/Top.scala'.format(root), 'w', encoding='UTF-8') as f:
+        f.write(testbench1 + testbench2 + testbench3 + testbench4 + testbench5 + testbench6 + testbench7)
+
+    # Dumping test values
+    fdiv_test: str = '\n'.join([
+        f'{float_to_hex(bin_to_float(e[0]))} / {float_to_hex(bin_to_float(e[1]))} = {float_to_hex(bin_to_float(e[2]))}'
+        for e in fdiv
+    ])
+    with open(f'{root}/div_sqrt_testcases/test_fdiv.s', 'w', encoding='UTF-8') as f:
+        f.write(fdiv_test)
 
 
 if __name__ == '__main__':

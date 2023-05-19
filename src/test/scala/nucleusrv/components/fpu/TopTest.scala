@@ -8,7 +8,9 @@ import chisel3._,
 class TopTest extends AnyFreeSpec with ChiselScalatestTester {
   "FALU" in {
     test(new Top) {
-      falu => falu.clock.step(100)
+      falu =>
+        falu.clock.setTimeout(5500)
+        falu.clock.step(5000)
     }
   }
 }

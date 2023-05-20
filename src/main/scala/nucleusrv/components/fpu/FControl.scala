@@ -33,6 +33,9 @@ class FControl extends RawModule with Parameters {
     ((io.fAluCtl === "b01011001010011".U) && !io.rs2.orR) -> 24.U,               // fsqrt.s
     (io.fAluCtl((fFmtWidth + fOpcodeWidth) - 1, 0) === "b001000111".U) -> 25.U,  // fmsub.s
     (io.fAluCtl((fFmtWidth + fOpcodeWidth) - 1, 0) === "b001001011".U) -> 26.U,  // fnmsub.s
-    (Cat(io.rm, io.fAluCtl) === "b01010100001010011".U) -> 27.U                  // feq.s
+    (Cat(io.rm, io.fAluCtl) === "b01010100001010011".U) -> 27.U,                 // feq.s
+    (Cat(io.rm, io.fAluCtl) === "b00000100001010011".U) -> 28.U,                 // fsgnj.s
+    (Cat(io.rm, io.fAluCtl) === "b00100100001010011".U) -> 29.U,                 // fsgnjn.s
+    (Cat(io.rm, io.fAluCtl) === "b01000100001010011".U) -> 30.U                  // fsgnjx.s
   ))
 }

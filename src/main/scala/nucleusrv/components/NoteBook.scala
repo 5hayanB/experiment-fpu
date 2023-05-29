@@ -11,6 +11,7 @@ class NoteBookIO extends Bundle {
 
   val out: UInt = Output(UInt(32.W))
   val exceptions: UInt = Output(UInt(5.W))
+  val fdiv_inReady = Output(Bool())
 }
 
 
@@ -31,4 +32,5 @@ class NoteBook extends Module {
 
   io.out := Mux(fdiv.io.outValid_sqrt, fNFromRecFN(expWidth, sigWidth, fdiv.io.out), 0.U)
   io.exceptions := fdiv.io.exceptionFlags
+  io.fdiv_inReady := fdiv.io.inReady
 }
